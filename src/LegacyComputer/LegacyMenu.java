@@ -1,18 +1,18 @@
-package computerLegacy;
+package LegacyComputer;
 
 import java.util.ArrayList;
 
 // TODO make constructor accept regular array as parameter instead of ArrayList
-// make really sure that no two different Categories have the same index
-public class CategoryLegacy implements Inventory, Comparable<CategoryLegacy> {
+// make really sure that no two different Menus have the same index
+public class LegacyMenu implements LegacyInventory, Comparable<LegacyMenu> {
     final private int index;
     final private String name;
-    final private ArrayList<ItemLegacy> itemLegacies;
+    final private ArrayList<LegacyCategory> categories;
 
-    public CategoryLegacy(int index, String name, ArrayList<ItemLegacy> itemLegacies) {
+    public LegacyMenu(int index, String name, ArrayList<LegacyCategory> categories) {
         this.index = index;
         this.name = name;
-        this.itemLegacies = itemLegacies;
+        this.categories = categories;
     }
 
     @Override
@@ -26,11 +26,11 @@ public class CategoryLegacy implements Inventory, Comparable<CategoryLegacy> {
     }
 
     public int size() {
-        return itemLegacies.size();
+        return categories.size();
     }
 
-    public ItemLegacy getItem(int index) {
-        return itemLegacies.get(index);
+    public LegacyCategory getCategory(int index) {
+        return categories.get(index);
     }
 
     @Override
@@ -43,8 +43,8 @@ public class CategoryLegacy implements Inventory, Comparable<CategoryLegacy> {
         if (object == null) return false;
         if (this.getClass() != object.getClass()) return false;
 
-        CategoryLegacy categoryLegacy = (CategoryLegacy) object;
-        return this.index == categoryLegacy.index;
+        LegacyMenu legacyMenu = (LegacyMenu) object;
+        return this.index == legacyMenu.index;
     }
 
     @Override
@@ -53,7 +53,7 @@ public class CategoryLegacy implements Inventory, Comparable<CategoryLegacy> {
     }
 
     @Override
-    public int compareTo(CategoryLegacy categoryLegacy) {
-        return Integer.compare(this.index, categoryLegacy.index);
+    public int compareTo(LegacyMenu legacyMenu) {
+        return Integer.compare(this.index, legacyMenu.index);
     }
 }

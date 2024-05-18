@@ -60,7 +60,7 @@ public class Reader {
     }
 
     public static void main(String[] args) {
-        Menu menu = getMenu("src/items.tsv");
+        Menu menu = Reader.getMenu("src/items.tsv");
         Category[] categories = menu.getCategories();
         Item[] items;
 

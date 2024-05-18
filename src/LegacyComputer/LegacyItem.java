@@ -1,12 +1,12 @@
-package computerLegacy;
+package LegacyComputer;
 
 // make really sure that no two different Items have the same index
-public class ItemLegacy implements Inventory, Comparable<ItemLegacy> {
+public class LegacyItem implements LegacyInventory, Comparable<LegacyItem> {
     final private int index;
     final private String name;
     final private float price;
 
-    public ItemLegacy(int index, String name, float price) {
+    public LegacyItem(int index, String name, float price) {
         this.index = index;
         this.name = name;
         this.price = price;
@@ -37,8 +37,8 @@ public class ItemLegacy implements Inventory, Comparable<ItemLegacy> {
         //TODO if (!(object instanceof Item)) return false;
         if (this.getClass() != object.getClass()) return false;
 
-        ItemLegacy itemLegacy = (ItemLegacy) object;
-        return this.index == itemLegacy.index;
+        LegacyItem legacyItem = (LegacyItem) object;
+        return this.index == legacyItem.index;
     }
 
     @Override
@@ -47,7 +47,7 @@ public class ItemLegacy implements Inventory, Comparable<ItemLegacy> {
     }
 
     @Override
-    public int compareTo(ItemLegacy itemLegacy) {
-        return Integer.compare(this.index, itemLegacy.index);
+    public int compareTo(LegacyItem legacyItem) {
+        return Integer.compare(this.index, legacyItem.index);
     }
 }
