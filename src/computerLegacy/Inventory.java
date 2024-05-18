@@ -1,4 +1,4 @@
-package computer;
+package computerLegacy;
 
 // TODO determine whether getName or toString should be used to get the name in main code for Menu, Category, and Item
 // TODO test equals, hashCode, and CompareTo methods for Menu, Category, and Item

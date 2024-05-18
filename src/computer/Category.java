@@ -1,59 +1,27 @@
 package computer;
 
-import java.util.ArrayList;
+import java.util.Arrays;
 
-// TODO make constructor accept regular array as parameter instead of ArrayList
-// make really sure that no two different Categories have the same index
-public class Category implements Inventory, Comparable<Category> {
-    final private int index;
-    final private String name;
-    final private ArrayList<Item> items;
+public class Category implements Comparable<Category> {
+    private final String name;
+    private Item[] items;
 
-    protected Category(int index, String name, ArrayList<Item> items) {
-        this.index = index;
+    public Category(String name, Item[] items) {
+        Arrays.sort(items);
+
         this.name = name;
         this.items = items;
     }
 
-    @Override
-    public int getIndex() {
-        return index;
-    }
-
-    @Override
     public String getName() {
         return name;
     }
-
-    protected int size() {
-        return items.size();
-    }
-
-    protected Item getItem(int index) {
-        return items.get(index);
-    }
-
-    @Override
-    public String toString() {
-        return name;
-    }
-
-    @Override
-    public boolean equals(Object object) {
-        if (object == null) return false;
-        if (this.getClass() != object.getClass()) return false;
-
-        Category category = (Category) object;
-        return this.index == category.index;
-    }
-
-    @Override
-    public int hashCode() {
-        return index;
+    public Item[] getItems() {
+        return items;
     }
 
     @Override
     public int compareTo(Category category) {
-        return Integer.compare(this.index, category.index);
+        return this.name.compareTo(category.name);
     }
 }

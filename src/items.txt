@@ -1,5 +1,4 @@
-|Starters
-Soup|2.6
+StartersSoup|2.6
 Chicken Balls|3.1
 Chicken Bites|3.5
 Chicken Wings|3.6
