@@ -1,6 +1,7 @@
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -13,12 +14,19 @@ import javafx.stage.Stage;
 import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
+
 // add to run configurations vm options (its hidden by default)
 // --module-path /Users/linry/Documents/fortune-garden/javafx-sdk-22.0.1/lib --add-modules javafx.controls,javafx.fxml
 
-//TODO prevent crashing when duplicate items are added
-//TODO implement save button in hBoxStageControls to save items to a txt
-public class GUI extends Application {
+//TODO add functionality to load orders from orders.tsv (with load confirmation success popup)
+//TODO move Printer from computer package to root directory and rename CLI
+//TODO formulate plan to integrate classes from computer package into GUI (Menu, Category, Item, Reader)
+public class GUI extends Application implements Constants {
     public static void main(String[] args) {
         Application.launch(args);
     }
@@ -27,11 +35,66 @@ public class GUI extends Application {
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("screen0: fullscreen");
         primaryStage.setScene(sceneMain(primaryStage));
-        primaryStage.setFullScreen(true);
+        primaryStage.setFullScreen(DEFAULT_FULLSCREEN);
         primaryStage.show();
         primaryStage.setOnCloseRequest(event -> {
-            stageExit(primaryStage).showAndWait();
+            stageClose(primaryStage).showAndWait();
         });
+    }
+
+    public Scene sceneMain(Stage stage) {
+        VBox vBox = new VBox(VBOX_SPACING);
+            Label label = new Label("Welcome to the fortune-garden computer!");
+            HBox hBox = new HBox(HBOX_SPACING);
+                    VBox vBoxOrders = new VBox(VBOX_SPACING);
+                        vBoxOrders.setPrefSize(VBOX_WIDTH, VBOX_HEIGHT);
+                ScrollPane scrollPaneItems = scrollPaneItems(vBoxOrders);
+                ScrollPane scrollPaneOrders = new ScrollPane(vBoxOrders);
+                hBox.getChildren().addAll(scrollPaneItems, scrollPaneOrders);
+        vBox.getChildren().addAll(label, hBox, hBoxStageControls(stage, scrollPaneOrders));
+
+        return new Scene(vBox, 600, 600);
+    }
+
+    public Button buttonSave(Stage stage, ScrollPane scrollPaneOrders) {
+        Button button = new Button("SAVE");
+            EventHandler<ActionEvent> eventHandler = actionEvent -> {
+                List<String> orders = new ArrayList<>();
+
+                Node nodeVBox = scrollPaneOrders.getContent();
+                if (nodeVBox instanceof VBox vBox) {
+                    for (Node nodeLabel : vBox.getChildren()) {
+                        if (nodeLabel instanceof Label label) {
+                            orders.add(label.getText());
+                        }
+                    }
+                }
+
+                //TODO is there a better way to save the file?
+                try {
+                    Files.write(Paths.get("src/orders.tsv"), orders);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+                stageSave(stage).show();
+            };
+            button.setOnAction(eventHandler);
+
+        return button;
+    }
+
+    public Button buttonRestart(Stage stage) {
+        Button button = new Button("RESTART");
+            EventHandler<ActionEvent> eventHandler = actionEvent -> {
+                //stage.hide(); needs Platform.setImplicitExit(false) (in start() preferably) to not close entire programme when no more stages are visible (Platform.exit() to actually exit the programme in that case)
+                stage.setScene(sceneMain(stage));
+                stage.setFullScreen(DEFAULT_FULLSCREEN);
+                //stage.show(); needs the entire programme not to be closed to show the stage
+            };
+            button.setOnAction(eventHandler);
+
+        return button;
     }
 
     public Button buttonClose(Stage stage) {
@@ -45,24 +108,11 @@ public class GUI extends Application {
         return button;
     }
 
-    public Button buttonRestart(Stage stage) {
-        Button button = new Button("RESTART");
-            EventHandler<ActionEvent> eventHandler = actionEvent -> {
-                //stage.hide(); needs Platform.setImplicitExit(false) (in start() preferably) to not close entire programme when no more stages are visible (Platform.exit() to actually exit the programme in that case)
-                stage.setScene(sceneMain(stage));
-                stage.setFullScreen(true);
-                //stage.show(); needs the entire programme not to be closed to show the stage
-            };
-            button.setOnAction(eventHandler);
-
-        return button;
-    }
-
     public Button buttonAddItem(String name, Pane pane) {
         Button button = new Button(name);
-            Label label = new Label(name);
+            Label label = new Label(name); //deprecated in favour of adding a new label instance each button press since adding duplicate items to panes is not allowed
             EventHandler<ActionEvent> eventHandler = actionEvent -> {
-                pane.getChildren().add(label);
+                pane.getChildren().add(new Label(name)); //adding a new label instance
             };
         button.setOnAction(eventHandler);
 
@@ -72,6 +122,7 @@ public class GUI extends Application {
     public ScrollPane scrollPaneItems(Pane itemDestination) {
         ScrollPane scrollPane = new ScrollPane();
             VBox vBox = new VBox(10);
+            vBox.setPrefSize(VBOX_WIDTH, VBOX_HEIGHT);
                 Button button0 = buttonAddItem("Starters", itemDestination);
                 Button button1 = buttonAddItem("Beef Dishes", itemDestination);
                 Button button2 = buttonAddItem("Chicken Dishes", itemDestination);
@@ -86,42 +137,53 @@ public class GUI extends Application {
         return scrollPane;
     }
 
-    public HBox hBoxStageControls(Stage stage) {
-        HBox hBox = new HBox();
-            Button buttonClose = buttonClose(stage);
+    public HBox hBoxStageControls(Stage stage, ScrollPane scrollPaneOrders) {
+        HBox hBox = new HBox(HBOX_SPACING);
+            Button buttonSave = buttonSave(stage, scrollPaneOrders);
             Button buttonRestart = buttonRestart(stage);
-            hBox.getChildren().addAll(buttonClose, buttonRestart);
+            Button buttonClose = buttonClose(stage);
+            hBox.getChildren().addAll(buttonSave, buttonRestart, buttonClose);
 
         return hBox;
     }
 
-    public Scene sceneMain(Stage stage) {
-        VBox vBox = new VBox(10);
-            Label label0 = new Label("Welcome to the fortune-garden computer!");
-            ScrollPane scrollPaneOrders = new ScrollPane();
-                VBox vBoxOrders = new VBox();
-                scrollPaneOrders.setContent(vBoxOrders);
-            ScrollPane scrollPaneItems = scrollPaneItems(vBoxOrders);
-        vBox.getChildren().addAll(label0, scrollPaneItems, scrollPaneOrders, hBoxStageControls(stage));
-
-        return new Scene(vBox, 400, 1000);
-    }
-
-    public Stage stageExit(Stage stageOwner) {
+    public Stage stageSave(Stage stageOwner) {
         Stage stage = new Stage();
         stage.initOwner(stageOwner);
         stage.initModality(Modality.WINDOW_MODAL);
         stage.initStyle(StageStyle.DECORATED);
-        stage.setX(100); stage.setY(100);
-        stage.setWidth(500); stage.setHeight(500);
-        stage.setTitle("WARNING");
-            VBox vBox = new VBox(10);
-                Label label = new Label("YOUR COMPUTER HAS VIRUS");
-                Button button1 = new Button("DOWNLOAD FREE ANTIVIRUS");
-                    button1.setOnAction(event -> stageExit(stage).showAndWait());
-                vBox.getChildren().addAll(label, button1, buttonClose(stage));
-            Scene scene = new Scene(vBox, 400, 200);
+
+        stage.setX(STAGE_X); stage.setY(STAGE_Y);
+        stage.setWidth(STAGE_WIDTH); stage.setHeight(STAGE_HEIGHT);
+        stage.setTitle("Save Confirmation");
+            VBox vBox = new VBox(VBOX_SPACING);
+                Label label = new Label("Orders have been successfully saved to `src/orders.tsv`.");
+                Button buttonClose = buttonClose(stage);
+                vBox.getChildren().addAll(label, buttonClose);
+            Scene scene = new Scene(vBox);
         stage.setScene(scene);
+
+        return stage;
+    }
+
+    public Stage stageClose(Stage stageOwner) {
+        Stage stage = new Stage();
+        stage.initOwner(stageOwner);
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initStyle(StageStyle.DECORATED);
+
+        stage.setX(STAGE_X); stage.setY(STAGE_Y);
+        stage.setWidth(STAGE_WIDTH); stage.setHeight(STAGE_HEIGHT);
+        stage.setTitle("WARNING");
+            VBox vBox = new VBox(VBOX_SPACING);
+                Label label = new Label("YOUR COMPUTER HAS VIRUS");
+                Button buttonMiscellaneous = new Button("DOWNLOAD FREE ANTIVIRUS");
+                    buttonMiscellaneous.setOnAction(event -> stageClose(stage).showAndWait());
+                Button buttonClose = buttonClose(stage);
+                vBox.getChildren().addAll(label, buttonMiscellaneous, buttonClose);
+            Scene scene = new Scene(vBox, STAGE_WIDTH, STAGE_HEIGHT);
+        stage.setScene(scene);
+
         return stage;
     }
 }
