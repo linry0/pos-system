@@ -23,9 +23,9 @@ import java.util.List;
 // add to run configurations vm options (its hidden by default)
 // --module-path /Users/linry/Documents/fortune-garden/javafx-sdk-22.0.1/lib --add-modules javafx.controls,javafx.fxml
 
-//TODO add functionality to load orders from orders.tsv (with load confirmation success popup)
+//TODO add functionality to remove items from orders
 //TODO move Printer from computer package to root directory and rename CLI
-//TODO formulate plan to integrate classes from computer package into GUI (Menu, Category, Item, Reader)
+//TODO formulate plan to integrate classes from computer package into GUI (Menu, Category, Item, Reader) (you can set userdata on a JavaFX node using the setUserData() method which takes any Object of your choosing)
 public class GUI extends Application implements Constants {
     public static void main(String[] args) {
         Application.launch(args);
@@ -54,6 +54,33 @@ public class GUI extends Application implements Constants {
         vBox.getChildren().addAll(label, hBox, hBoxStageControls(stage, scrollPaneOrders));
 
         return new Scene(vBox, 600, 600);
+    }
+
+    public Button buttonLoad(Stage stage, ScrollPane scrollPaneOrders) {
+        Button button = new Button("LOAD");
+            EventHandler<ActionEvent> eventHandler = actionEvent -> {
+                List<String> orders = new ArrayList<>();
+                try {
+                    orders = Files.readAllLines(Paths.get("src/orders.tsv"));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+
+                Node nodeVBox = scrollPaneOrders.getContent();
+                if (nodeVBox instanceof VBox vBox) {
+                    vBox.getChildren().clear();
+                    for (String order : orders) {
+                        Label label = new Label(order);
+                        vBox.getChildren().add(label);
+                    }
+                }
+
+                stageLoad(stage).show();
+            };
+            button.setOnAction(eventHandler);
+
+        return button;
     }
 
     public Button buttonSave(Stage stage, ScrollPane scrollPaneOrders) {
@@ -139,12 +166,32 @@ public class GUI extends Application implements Constants {
 
     public HBox hBoxStageControls(Stage stage, ScrollPane scrollPaneOrders) {
         HBox hBox = new HBox(HBOX_SPACING);
+            Button buttonLoad = buttonLoad(stage, scrollPaneOrders);
             Button buttonSave = buttonSave(stage, scrollPaneOrders);
             Button buttonRestart = buttonRestart(stage);
             Button buttonClose = buttonClose(stage);
-            hBox.getChildren().addAll(buttonSave, buttonRestart, buttonClose);
+            hBox.getChildren().addAll(buttonLoad, buttonSave, buttonRestart, buttonClose);
 
         return hBox;
+    }
+
+    public Stage stageLoad(Stage stageOwner) {
+        Stage stage = new Stage();
+        stage.initOwner(stageOwner);
+        stage.initModality(Modality.WINDOW_MODAL);
+        stage.initStyle(StageStyle.DECORATED);
+
+        stage.setX(STAGE_X); stage.setY(STAGE_Y);
+        stage.setWidth(STAGE_WIDTH); stage.setHeight(STAGE_HEIGHT);
+        stage.setTitle("Load confirmation");
+        VBox vBox = new VBox(VBOX_SPACING);
+        Label label = new Label("Orders have been successfully loaded from `src/orders.tsv`.");
+        Button buttonClose = buttonClose(stage);
+        vBox.getChildren().addAll(label, buttonClose);
+        Scene scene = new Scene(vBox);
+        stage.setScene(scene);
+
+        return stage;
     }
 
     public Stage stageSave(Stage stageOwner) {
