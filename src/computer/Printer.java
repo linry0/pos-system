@@ -32,7 +32,7 @@ public class Printer {
     }
 
     public static void main(String[] args) throws IOException {
-        Menu menu = Reader.getMenu("src/items.tsv");
+        Menu menu = Reader.getMenu("src/menu.tsv");
 
         Scanner scanner = new Scanner(System.in);
 

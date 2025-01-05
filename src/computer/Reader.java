@@ -23,7 +23,7 @@ public class Reader {
         ArrayList<String[]> pairs = new ArrayList<String[]>();
 
         for (String line : lines) {
-            String[] triple = line.split("\t+");
+            String[] triple = line.split("\t+"); // TODO rename triple to entry. entry consists of category, item, and price
 
             if (triple.length == 3) pairs.add(triple);
         }
@@ -46,7 +46,6 @@ public class Reader {
         }
 
         ArrayList<Category> categories = new ArrayList<Category>();
-
         for (String string : temp.keySet()) {
             Category category = new Category(string, temp.get(string).toArray(new Item[]{}));
             categories.add(category);
@@ -60,7 +59,7 @@ public class Reader {
     }
 
     public static void main(String[] args) {
-        Menu menu = Reader.getMenu("src/items.tsv");
+        Menu menu = Reader.getMenu("src/menu.tsv");
         Category[] categories = menu.getCategories();
         Item[] items;
 

@@ -6,9 +6,12 @@ public interface Constants {
     int STAGE_WIDTH = 400;
     int STAGE_HEIGHT = 150;
 
-    int VBOX_WIDTH = 200;
-    int VBOX_HEIGHT = 500;
+    int VBOX_LIST_WIDTH = 200;
+    int VBOX_LIST_HEIGHT = 500;
 
     int HBOX_SPACING = 10;
     int VBOX_SPACING = 10;
+	
+	int VBOX_FIELDS_WIDTH = 300;
+	int VBOX_FIELDS_HEIGHT = 500;
 }
