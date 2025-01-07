@@ -1,1 +1,6 @@
-src/.DS_Store
+.DS_Store
+.idea/
+javafx-sdk-21.0.5/
+out/
+src/meta-inf/
+pos-system.iml
