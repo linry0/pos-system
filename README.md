@@ -1,2 +1,3 @@
 # fortune-garden
-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
+
+[Download JavaFX SDK](https://download2.gluonhq.com/openjfx/21.0.5/openjfx-21.0.5_osx-aarch64_bin-sdk.zip)
