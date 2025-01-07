@@ -7,7 +7,7 @@ public class Menu {
     private final Category[] categories;
 
     public Menu(String name, Category[] categories) {
-        Arrays.sort(categories);
+        // Arrays.sort(categories);
 
         this.name = name;
         this.categories = categories;

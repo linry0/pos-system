@@ -1,29 +1,47 @@
-Starters	Soup			260
-Starters	Chicken Balls	310
-Starters	Chicken Bites	350
-Starters	Chicken Wings	360
-Starters	Chicken Skewer	350
+Starters	Chicken Noodle Soup	270
+Starters	Chicken Balls		330
+Starters	Spring Rolls		350
+Starters	Spare Ribs			580
 
-Rice Dishes 	Chicken with Rice		710
-Rice Dishes 	Beef with Rice			710
-Rice Dishes 	Pork with Rice			720
-Rice Dishes 	Curry with Rice			710
-Rice Dishes 	King Prawn with Rice	740
+Chicken Dishes	Combination Chicken		760
+Chicken Dishes	Peking Chicken			730
+Chicken Dishes	Honey Chilli Chicken	730
+Chicken Dishes	Salt Chilli Chicken		710
+Chicken Dishes	Mushroom Chicken		710
 
-Rice and Noodle Dishes	Special Fried Rice	680
-Rice and Noodle Dishes	Special Chow Mein	690
+Curry Dishes	Special Curry		750
+Curry Dishes	King Prawn Curry	780
+Curry Dishes	Chicken Curry		720
+Curry Dishes	Vegetable Curry		590
+Curry Dishes	Singapore Curry		690
 
-Extras	Chips				230
-Extras	Rice				230
-Extras	Noodles				280
-Extras	Fried Vegetables	330
-Extras	Prawn Crackers		100
+Foo Yung Dishes		Special Foo Yung	760
+Foo Yung Dishes		King Prawn Foo Yung	780
+Foo Yung Dishes		Chicken Foo Yung	710
+Foo Yung Dishes		Mushroom Foo Yung	620
 
-Sauces	Curry Sauce				210
-Sauces	Gravy Sauce				210
-Sauces	Sweet and Sour Sauce	210
+Fried Rice Dishes	Special Fried Rice		700
+Fried Rice Dishes	King Prawn Fried Rice	780
+Fried Rice Dishes	Chicken Fried Rice		590
+Fried Rice Dishes	Singapore Fried Rice	700
+Fried Rice Dishes	Vegetable Fried Rice	590
+
+Chow Mein	Special Chow Mein		750
+Chow Mein	King Prawn Chow Mein	780
+Chow Mein	Chicken Chow Mein		730
+Chow Mein	Singapore Chow Mein		750
+Chow Mein	Vegetable Chow Mein		630
+
+Munchie Boxes	Small Munchie Box	740
+Munchie Boxes	Large Munchie Box	1200
+
+Extras	Chips			240
+Extras	Rice			240
+Extras	Noodles			320
+Extras	Prawn Crackers	100
+Extras	Sauce			170
 
 Drinks	Can of Coke         100
 Drinks	Can of Irn Bru      100
-Drinks	Bottle of Coke      250
-Drinks	Bottle of Irn Bru   250
+Drinks	Bottle of Coke      280
+Drinks	Bottle of Irn Bru   280

@@ -5,6 +5,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Reader {
@@ -32,7 +33,7 @@ public class Reader {
     }
 
     private static Menu parseMenu(String[][] triples) { // TODO optimise this shit
-        HashMap<String, ArrayList<Item>> temp = new HashMap<String, ArrayList<Item>>();
+        LinkedHashMap<String, ArrayList<Item>> temp = new LinkedHashMap<String, ArrayList<Item>>();
 
         for (String[] triple : triples) {
             String name = triple[0];
