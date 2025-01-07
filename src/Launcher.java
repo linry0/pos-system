@@ -1,4 +1,6 @@
-public class GUI_2 {
+import gui.GUI;
+
+public class Launcher {
 	public static void main(String[] args) {
 		GUI.main(args);
 	}

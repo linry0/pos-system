@@ -1,6 +1,4 @@
-package computer;
-
-import java.util.Arrays;
+package menu;
 
 public class Menu {
     private final String name;

@@ -1,24 +1,31 @@
-package computer;
+package util;
 
+import menu.Category;
+import menu.Item;
+import menu.Menu;
+
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Reader {
-    private static String[] readFile(String filePath) {
-        Path path = Paths.get(filePath);
-        String[] lines = new String[]{};
+	private static String[] readFile(String filePath) {
+	    try (InputStream inputStream = Reader.class.getClassLoader().getResourceAsStream(filePath);
+	         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
+	        
+	        return reader.lines().toArray(String[]::new);
+	    } catch (Exception e) {
+	        return new String[]{};
+	    }
+	}
 
-        try {
-            return Files.readAllLines(path).toArray(lines);
-        } catch (Exception e) {
-            return lines;
-        }
-    }
 
     private static String[][] formatFile(String[] lines) { // TODO maybe eliminate magic number 3 and rename triples to values to be more modular in case i add more values per line
         ArrayList<String[]> pairs = new ArrayList<String[]>();
@@ -60,7 +67,7 @@ public class Reader {
     }
 
     public static void main(String[] args) {
-        Menu menu = Reader.getMenu("src/menu.tsv");
+        Menu menu = Reader.getMenu("data/menu.tsv");
         Category[] categories = menu.getCategories();
         Item[] items;
 

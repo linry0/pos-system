@@ -1,4 +1,4 @@
-package computer;
+package menu;
 
 import java.util.Arrays;
 

@@ -1,3 +1,5 @@
+package gui;
+
 public interface Constants {
     boolean DEFAULT_FULLSCREEN = false;
 
