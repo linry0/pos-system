@@ -1,6 +1,6 @@
 package gui;
 
-import util.*;
+import util.Reader;
 import menu.Category;
 import menu.Item;
 import menu.Menu;
@@ -9,7 +9,6 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
-import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
@@ -27,46 +26,32 @@ import java.util.HashMap;
 // add to run configurations vm options (its hidden by default)
 // --module-path /Users/linry/Documents/fortune-garden/javafx-sdk-22.0.1/lib --add-modules javafx.controls,javafx.fxml
 
-//TODO add functionality to remove items from orders
 //TODO add ability to save orders from main scene to hard disk
-//TODO move Printer from computer package to root directory and rename CLI
-//TODO formulate plan to integrate classes from computer package into gui.GUI (Menu, Category, Item, Reader) (you can set userdata on a JavaFX node using the setUserData() method which takes any Object of your choosing)
-
-//TODO implement back button feature like internet browser each scene is a webpage. stage.userdata will be a list of scene addresses and each scene.userdata will be the stage
-
-
+//TODO add a printer to print order
 
 public class GUI extends Application implements Constants {
 	public static HashMap<String, SceneBuilder> sceneReferralDatabase;
-	public static ToggleGroup toggleGroupSavedOrders;
-	
+	public static SavedOrders savedOrders;
+
 	public static SceneBuilder sceneMain;
 	public static SceneBuilder sceneOrder;
 	
 	static {
 		sceneReferralDatabase = new HashMap<>();
-		toggleGroupSavedOrders = new ToggleGroup();
+		savedOrders = new SavedOrders();
 
 		sceneMain = stage -> {
 			Scene scene = new Scene(new Group());
 			scene.setUserData("sceneMain");
 				HBox hBox = new HBox(Constants.HBOX_SPACING);
 					ScrollPane scrollPaneSavedOrders = new ScrollPane();
-						VBox vBoxSavedOrders = new VBox(Constants.VBOX_SPACING);
-						vBoxSavedOrders.setPrefSize(Constants.VBOX_LIST_WIDTH, Constants.VBOX_LIST_HEIGHT);
-						vBoxSavedOrders.setUserData(toggleGroupSavedOrders);
-						
-						for (Toggle toggle : toggleGroupSavedOrders.getToggles()) {
-							if (toggle instanceof ToggleButton toggleButton) {
-								vBoxSavedOrders.getChildren().add(toggleButton);
-							}
-						}
-					scrollPaneSavedOrders.setContent(vBoxSavedOrders);
+					scrollPaneSavedOrders.setContent(savedOrders.getVBox());
 					
 					VBox vBoxStageControls = new VBox(Constants.VBOX_SPACING);
-//						Button buttonNewOrder; //TODO
+						Button buttonNewOrder = buttonNewScene(stage, "sceneOrder", "NEW ORDER"); //TODO
 						Button buttonLoadOrder = buttonLoadScene(stage, "sceneOrder", "LOAD ORDER");
-					vBoxStageControls.getChildren().addAll(buttonLoadOrder);
+						Button buttonDeleteSelectedOrder = buttonDeleteSelectedOrder(stage, "DELETE SELECTED");
+					vBoxStageControls.getChildren().addAll(buttonNewOrder, buttonLoadOrder, buttonDeleteSelectedOrder);
 				hBox.getChildren().addAll(scrollPaneSavedOrders, vBoxStageControls);
 			scene.setRoot(hBox);
 			
@@ -74,49 +59,39 @@ public class GUI extends Application implements Constants {
 		};
 		
 		sceneOrder = stage -> {
-			ToggleGroup toggleGroupSavedOrders = GUI.toggleGroupSavedOrders;
-			Order orderSelected = toggleGroupSavedOrders.getSelectedToggle() != null ? (Order) toggleGroupSavedOrders.getSelectedToggle().getUserData() : new Order();
-			Menu menu = Reader.getMenu("data/menu.tsv"); //TODO maybe put this somewhere else
+			Order orderSelected = savedOrders.getSelected();
+			Menu menu = Reader.getMenu("menu.tsv"); //TODO maybe put this somewhere else
 			
 			Scene scene = new Scene(new Group());
 			scene.setUserData("sceneOrder");
-				VBox vBox = new VBox(Constants.VBOX_SPACING);
-		            Label label = new Label("Welcome to the fortune-garden computer!");
-		
-		            HBox hBox = new HBox(Constants.HBOX_SPACING);
-						VBox vBoxItems = new VBox(Constants.VBOX_SPACING);
-						vBoxItems.setPrefSize(Constants.VBOX_LIST_WIDTH, Constants.VBOX_LIST_HEIGHT);
-		                VBox vBoxOrders = new VBox(Constants.VBOX_SPACING);
-						vBoxOrders.setPrefSize(Constants.VBOX_LIST_WIDTH, Constants.VBOX_LIST_HEIGHT);
-							for (Item item : orderSelected.getItems()) {
-									HBox hBoxOrder = new HBox(Constants.HBOX_SPACING);
-										Label labelItemName = new Label(item.getName());
-										Label labelItemPrice = new Label(item.getPrice().toString());
-									hBoxOrder.getChildren().add(labelItemName);
-									hBoxOrder.getChildren().add(labelItemPrice);
-								vBoxOrders.getChildren().add(hBoxOrder);
-							}
-		
-						VBox vBoxCustomerInformation = vBoxCustomerInformation();
-			                ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(0)).getChildren().getLast()).setText(orderSelected.getName());
-			                ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(1)).getChildren().getLast()).setText(orderSelected.getTelephone());
-			                ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(2)).getChildren().getLast()).setText(orderSelected.getPostcode());
-			                ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(3)).getChildren().getLast()).setText(orderSelected.getAddress1());
-			                ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(4)).getChildren().getLast()).setText(orderSelected.getAddress2());
-			                ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(5)).getChildren().getLast()).setText(orderSelected.getNotes());
-		                ScrollPane scrollPaneCategories = scrollPaneCategories(menu, vBoxItems, vBoxOrders);
-						ScrollPane scrollPaneItems = new ScrollPane(vBoxItems);
-		                ScrollPane scrollPaneOrders = new ScrollPane(vBoxOrders);
-					hBox.getChildren().addAll(vBoxCustomerInformation, scrollPaneCategories, scrollPaneItems, scrollPaneOrders);
-		
-					HBox hBoxSceneControls = new HBox(Constants.HBOX_SPACING);
-						Button buttonSaveOrder = buttonSaveOrder(vBoxCustomerInformation, vBoxOrders);
+				HBox hBox = new HBox(Constants.HBOX_SPACING);
+					VBox vBoxItems = new VBox(Constants.VBOX_SPACING);
+					vBoxItems.setPrefSize(Constants.VBOX_LIST_WIDTH, Constants.VBOX_LIST_HEIGHT);
+
+						OrderedItems orderedItems = new OrderedItems();
+						orderedItems.addAll(orderSelected.getItems());
+					VBox vBoxOrderedItems = orderedItems.getVBox();
+
+						CustomerInformation customerInformation = new CustomerInformation();
+						customerInformation.setName(orderSelected.getName());
+						customerInformation.setTelephone(orderSelected.getTelephone());
+						customerInformation.setPostcode(orderSelected.getPostcode());
+						customerInformation.setAddress1(orderSelected.getAddress1());
+						customerInformation.setAddress2(orderSelected.getAddress2());
+						customerInformation.setNotes(orderSelected.getNotes());
+					VBox vBoxCustomerInformation = customerInformation.getVBox();
+
+					VBox vBoxSceneControls = new VBox(Constants.HBOX_SPACING);
+						Button buttonRemoveItem = orderedItems.buttonItemRemove("REMOVE ITEM");
+						Button buttonSaveOrder = buttonSaveOrder(customerInformation, orderedItems, "SAVE ORDER");
 						Button buttonClose = buttonLoadScene(stage, "sceneMain", "CLOSE");
-					hBoxSceneControls.getChildren().addAll(buttonSaveOrder, buttonClose);
-		
-		        vBox.getChildren().addAll(label, hBox, hBoxSceneControls);
-				
-			scene.setRoot(vBox);
+					vBoxSceneControls.getChildren().addAll(buttonRemoveItem, buttonSaveOrder, buttonClose);
+
+					ScrollPane scrollPaneCategories = scrollPaneCategories(menu, vBoxItems, orderedItems);
+					ScrollPane scrollPaneItems = new ScrollPane(vBoxItems);
+					ScrollPane scrollPaneOrders = new ScrollPane(vBoxOrderedItems);
+				hBox.getChildren().addAll(vBoxCustomerInformation, scrollPaneCategories, scrollPaneItems, scrollPaneOrders, vBoxSceneControls);
+			scene.setRoot(hBox);
 	        return scene;
 	    };
 		
@@ -137,57 +112,71 @@ public class GUI extends Application implements Constants {
 		
 		return button;
 	}
-	
-	public Button buttonReloadScene(Stage stage, String sceneReferralKey, String label) {
+
+	static public Button buttonNewScene(Stage stage, String sceneReferralKey, String label) {
+		Button buttonLoadScene = buttonLoadScene(stage, sceneReferralKey, "LOAD");
+
+		Button button = new Button(label);
+		EventHandler<ActionEvent> eventHandler = actionEvent -> {
+			savedOrders.resetSelected();
+			buttonLoadScene.fire();
+		};
+		button.setOnAction(eventHandler);
+
+		return button;
+	}
+
+	static public Button buttonReloadScene(Stage stage, String label) {
+		Button button = new Button(label);
+		EventHandler<ActionEvent> eventHandler = actionEvent -> {
+			ArrayList<String> sceneHistory = (ArrayList<String>) stage.getUserData();
+
+			Scene scene = sceneReferralDatabase.get(sceneHistory.getLast()).build(stage);
+			stage.setScene(scene);
+		};
+		button.setOnAction(eventHandler);
+
+		return button;
+	}
+
+	static public Button buttonDeleteSelectedOrder(Stage stage, String label) {
+		Button buttonReloadScene = buttonReloadScene(stage, "RELOAD");
+
 		Button button = new Button(label);
 			EventHandler<ActionEvent> eventHandler = actionEvent -> {
-				ArrayList<String> sceneHistory = (ArrayList<String>) stage.getUserData();
-				
-				Scene scene = sceneReferralDatabase.get(sceneHistory.getLast()).build(stage);
-				stage.setScene(scene);
+				savedOrders.removeSelected();
+				buttonReloadScene.fire();
 			};
 		button.setOnAction(eventHandler);
-		
+
 		return button;
 	}
-	
-	static public Button buttonSaveOrder(VBox vBoxCustomerInformation, VBox vBoxOrders) {
-		Button button = new Button("SAVE ORDER");
+
+	static public Button buttonSaveOrder(CustomerInformation customerInformation, OrderedItems orderedItems, String label) {
+		Button button = new Button(label);
 			EventHandler<ActionEvent> eventHandler = actionEvent -> {
-				ToggleGroup toggleGroupSavedOrders = GUI.toggleGroupSavedOrders;
-				
-					String name = ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(0)).getChildren().getLast()).getText();
-					String telephone = ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(1)).getChildren().getLast()).getText();
-					String postcode = ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(2)).getChildren().getLast()).getText();
-					String address1 = ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(3)).getChildren().getLast()).getText();
-					String address2 = ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(4)).getChildren().getLast()).getText();
-					String notes = ((TextInputControl) ((HBox) vBoxCustomerInformation.getChildren().get(5)).getChildren().getLast()).getText();
-					ArrayList<Item> items = new ArrayList<>();
-						for (Node node : vBoxOrders.getChildren()) {
-							if (node instanceof HBox hBox) {
-										String itemName = ((Label) hBox.getChildren().getFirst()).getText();
-										Integer itemPrice = Integer.parseInt(((Label) hBox.getChildren().getLast()).getText());
-									Item item = new Item(itemName, itemPrice);
-								items.add(item);
-							}
-						}
+					String name = customerInformation.getName();
+					String telephone = customerInformation.getTelephone();
+					String postcode = customerInformation.getPostcode();
+					String address1 = customerInformation.getAddress1();
+					String address2 = customerInformation.getAddress2();
+					String notes = customerInformation.getNotes();
+					ArrayList<Item> items = orderedItems.getAll();
 				Order order = new Order(name, telephone, postcode, address1, address2, notes, items);
-				
-				ToggleButton toggleButton = new ToggleButton(order.getZonedDateTime().toString());
-				toggleButton.setToggleGroup(toggleGroupSavedOrders);
-				toggleButton.setUserData(order); // may cause issues this overwrites the togglegroup selected might change inbetween loading the scene and saving the scene so...
+
+				savedOrders.add(order);
 			};
 		button.setOnAction(eventHandler);
-		
+
 		return button;
 	}
 	
-    static public ToggleButton buttonChooseCategory(Category category, Pane paneItems, Pane paneOrders) {
+    static public ToggleButton buttonCategoryChoose(Category category, Pane paneItems, OrderedItems orderedItems) {
         ToggleButton toggleButton = new ToggleButton(category.getName());
             EventHandler<ActionEvent> eventHandler = new EventHandler<ActionEvent>() {
                 @Override
                 public void handle(ActionEvent actionEvent) {
-					ScrollPane scrollPaneItems = scrollPaneItems(category, paneOrders);
+					ScrollPane scrollPaneItems = scrollPaneItems(category, orderedItems);
 					
 					if (toggleButton.isSelected()) {
 						paneItems.getChildren().clear();
@@ -202,41 +191,7 @@ public class GUI extends Application implements Constants {
 		return toggleButton;
     }
 	
-	static public Button buttonAddItem(Item item, Pane paneOrders) {
-		Button button = new Button(item.getName());
-			Label label = new Label(item.getName()); //deprecated in favour of adding a new label instance each button press since adding duplicate items to panes is not allowed
-			EventHandler<ActionEvent> eventHandler = new EventHandler<ActionEvent>() {
-				@Override
-				public void handle(ActionEvent actionEvent) {
-						HBox hBox = new HBox(Constants.HBOX_SPACING);
-							
-							Label label1 = new Label(item.getName());
-							Label label2 = new Label(Integer.toString(item.getPrice()));
-						hBox.getChildren().addAll(label1, label2);
-					paneOrders.getChildren().add(hBox);
-				}
-			};
-		button.setOnAction(eventHandler);
-
-		return button;
-	}
-	
-	static public VBox vBoxCustomerInformation() {
-		VBox vBox = new VBox(Constants.VBOX_SPACING);
-		vBox.setPrefSize(Constants.VBOX_FIELDS_WIDTH, Constants.VBOX_FIELDS_HEIGHT);
-			String[] fields = {"Name", "Telephone", "Postcode", "House No.", "Address", "Notes"};
-			for (String field : fields) {
-					HBox hBox = new HBox(Constants.HBOX_SPACING);
-						Label label = new Label(field);
-						TextField textField = new TextField();
-					hBox.getChildren().addAll(label, textField);
-				vBox.getChildren().add(hBox);
-			}
-
-		return vBox;
-	}
-	
-	static public ScrollPane scrollPaneCategories(Menu menu, Pane paneItems, Pane paneOrders) {
+	static public ScrollPane scrollPaneCategories(Menu menu, Pane paneItems, OrderedItems orderedItems) {
         ScrollPane scrollPane = new ScrollPane();
             VBox vBox = new VBox(10);
             vBox.setPrefSize(Constants.VBOX_LIST_WIDTH, Constants.VBOX_LIST_HEIGHT);
@@ -244,9 +199,9 @@ public class GUI extends Application implements Constants {
                 ArrayList<ToggleButton> toggleButtonsChooseCategory = new ArrayList<>();
 				
                 for (Category category : menu.getCategories()) {
-                    ToggleButton toggleButtonChooseCategory = buttonChooseCategory(category, paneItems, paneOrders);
-					toggleButtonChooseCategory.setToggleGroup(toggleGroup);
-                    toggleButtonsChooseCategory.add(toggleButtonChooseCategory);
+                    ToggleButton toggleButtonCategoryChoose = buttonCategoryChoose(category, paneItems, orderedItems);
+					toggleButtonCategoryChoose.setToggleGroup(toggleGroup);
+                    toggleButtonsChooseCategory.add(toggleButtonCategoryChoose);
                 }
             vBox.getChildren().addAll(toggleButtonsChooseCategory);
         scrollPane.setContent(vBox);
@@ -254,15 +209,15 @@ public class GUI extends Application implements Constants {
         return scrollPane;
     }
 	
-	static public ScrollPane scrollPaneItems(Category category, Pane paneOrders) {
+	static public ScrollPane scrollPaneItems(Category category, OrderedItems orderedItems) {
         ScrollPane scrollPane = new ScrollPane();
             VBox vBox = new VBox(10);
             vBox.setPrefSize(Constants.VBOX_LIST_WIDTH, Constants.VBOX_LIST_HEIGHT);
-				ArrayList<Button> buttonsAddItem = new ArrayList<>();
+				ArrayList<Button> buttonsItemAdd = new ArrayList<>();
 				for (Item item : category.getItems()) {
-					buttonsAddItem.add(buttonAddItem(item, paneOrders));
+					buttonsItemAdd.add(orderedItems.buttonItemAdd(item));
 				}
-            vBox.getChildren().addAll(buttonsAddItem);
+            vBox.getChildren().addAll(buttonsItemAdd);
         scrollPane.setContent(vBox);
 
         return scrollPane;

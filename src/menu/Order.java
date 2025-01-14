@@ -12,10 +12,17 @@ public class Order {
 	private String address1;
 	private String address2;
 	private String notes;
-	private List<Item> items = new ArrayList<>(); //TODO change to ArrayList<Item> later
+	private List<Item> items; //TODO change to ArrayList<Item> later
 	
 	public Order() {
 		this.zonedDateTime = ZonedDateTime.now();
+		this.name = "";
+		this.telephone = "";
+		this.postcode = "";
+		this.address1 = "";
+		this.address2 = "";
+		this.notes = "";
+		this.items = new ArrayList<>();
 	}
 	
 	public Order(String name, String telephone, String postcode, String address1, String address2, String notes, List<Item> items) {

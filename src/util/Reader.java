@@ -7,22 +7,19 @@ import menu.Menu;
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 
 public class Reader {
 	private static String[] readFile(String filePath) {
-	    try (InputStream inputStream = Reader.class.getClassLoader().getResourceAsStream(filePath);
+	    try (InputStream inputStream = Reader.class.getResourceAsStream("/data/menu.tsv");
 	         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
 	        
 	        return reader.lines().toArray(String[]::new);
 	    } catch (Exception e) {
-	        return new String[]{};
+	        e.printStackTrace();
+	        return new String[]{"Starters\tSoup\t100"};
 	    }
 	}
 
@@ -67,7 +64,7 @@ public class Reader {
     }
 
     public static void main(String[] args) {
-        Menu menu = Reader.getMenu("data/menu.tsv");
+        Menu menu = Reader.getMenu("main/resources/menu.tsv");
         Category[] categories = menu.getCategories();
         Item[] items;
 
