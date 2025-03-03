@@ -5,4 +5,6 @@ module pos.system {
 
     exports gui to javafx.graphics;
     opens gui to javafx.graphics;
+	exports element to javafx.graphics;
+	opens element to javafx.graphics;
 }

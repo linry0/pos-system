@@ -1,87 +1,82 @@
 package menu;
 
+import element.CustomerInformationField;
+
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
-public class Order {
+public class Order implements Cloneable{
 	private final ZonedDateTime zonedDateTime;
-	private String name;
-	private String telephone;
-	private String postcode;
-	private String address1;
-	private String address2;
-	private String notes;
-	private List<Item> items; //TODO change to ArrayList<Item> later
+	private HashMap<CustomerInformationField, String> fields;
+	private List<Item> items;
 	
 	public Order() {
 		this.zonedDateTime = ZonedDateTime.now();
-		this.name = "";
-		this.telephone = "";
-		this.postcode = "";
-		this.address1 = "";
-		this.address2 = "";
-		this.notes = "";
+		this.fields = new HashMap<>();
+		for (CustomerInformationField customerInformationField : CustomerInformationField.values()) {
+			fields.put(customerInformationField, "");
+		}
 		this.items = new ArrayList<>();
 	}
 	
-	public Order(String name, String telephone, String postcode, String address1, String address2, String notes, List<Item> items) {
-		this.zonedDateTime = ZonedDateTime.now();
-		this.name = name;
-		this.telephone = telephone;
-		this.postcode = postcode;
-		this.address1 = address1;
-		this.address2 = address2;
-		this.notes = notes;
+	public Order(HashMap<CustomerInformationField, String> fields, List<Item> items) {
+		this();
+		
+		for (CustomerInformationField customerInformationField : fields.keySet()) {
+			this.fields.put(customerInformationField, fields.get(customerInformationField));
+		}
+		
 		this.items = items;
 	}
 	
-	//TODO improve safety by returning copy instead of original
-	public ZonedDateTime getZonedDateTime() {
-		return zonedDateTime;
-	}
-	public String getName() {
-		return name;
-	}
-	public String getTelephone() {
-		return telephone;
-	}
-	public String getPostcode() {
-		return postcode;
-	}
-	public String getAddress1() {
-		return address1;
-	}
-	public String getAddress2() {
-		return address2;
-	}
-	public String getNotes() {
-		return notes;
+	public String getField(CustomerInformationField customerInformationField) { //TODO improve safety by returning copy instead of original
+		return fields.get(customerInformationField);
 	}
 	public List<Item> getItems() {
 		return items;
 	}
-	//TODO makes notes TextArea instead of TextField
 	
-	public void setName(String name) {
-		this.name = name;
-	}
-	public void setTelephone(String telephone) {
-		this.telephone = telephone;
-	}
-	public void setPostcode(String postcode) {
-		this.postcode = postcode;
-	}
-	public void setAddress1(String address1) {
-		this.address1 = address1;
-	}
-	public void setAddress2(String address2) {
-		this.address2 = address2;
-	}
-	public void setNotes(String notes) {
-		this.notes = notes;
+	public void setField(CustomerInformationField customerInformationField, String string) {
+		fields.put(customerInformationField, string);
 	}
 	public void setItems(List<Item> items) {
 		this.items = items;
+	}
+	
+	public void addItem(Item item) {
+		items.add(item);
+	}
+	public void removeItem(Item item) {
+		items.remove(item);
+	}
+	
+	@Override
+	public Order clone() {
+		try {
+			Order order = (Order) super.clone();
+			// keep the zonedDateTime constant throughout clones
+			
+			// copy over customer fields
+			for (CustomerInformationField customerInformationField : CustomerInformationField.values()) {
+				order.setField(customerInformationField, getField(customerInformationField));
+			}
+			
+			// copy over items
+			order.items = new ArrayList<>();
+			for (Item item : items) {
+				order.items.add(item.clone());
+			}
+			
+			return order;
+		} catch (CloneNotSupportedException e) {
+			throw new AssertionError("Cloning failed", e);
+		}
+	}
+	
+	@Override
+	public String toString() {
+		return String.format("%02d:%02d:%02d", zonedDateTime.getHour(), zonedDateTime.getMinute(), zonedDateTime.getSecond());
 	}
 }
