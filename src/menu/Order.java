@@ -1,6 +1,6 @@
 package menu;
 
-import element.CustomerInformationField;
+import element.CustomerInformationEnum;
 
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -9,37 +9,37 @@ import java.util.List;
 
 public class Order implements Cloneable{
 	private final ZonedDateTime zonedDateTime;
-	private HashMap<CustomerInformationField, String> fields;
+	private HashMap<CustomerInformationEnum, String> fields;
 	private List<Item> items;
 	
 	public Order() {
 		this.zonedDateTime = ZonedDateTime.now();
 		this.fields = new HashMap<>();
-		for (CustomerInformationField customerInformationField : CustomerInformationField.values()) {
-			fields.put(customerInformationField, "");
+		for (CustomerInformationEnum customerInformationEnum : CustomerInformationEnum.values()) {
+			fields.put(customerInformationEnum, "");
 		}
 		this.items = new ArrayList<>();
 	}
 	
-	public Order(HashMap<CustomerInformationField, String> fields, List<Item> items) {
+	public Order(HashMap<CustomerInformationEnum, String> fields, List<Item> items) {
 		this();
 		
-		for (CustomerInformationField customerInformationField : fields.keySet()) {
-			this.fields.put(customerInformationField, fields.get(customerInformationField));
+		for (CustomerInformationEnum customerInformationEnum : fields.keySet()) {
+			this.fields.put(customerInformationEnum, fields.get(customerInformationEnum));
 		}
 		
 		this.items = items;
 	}
 	
-	public String getField(CustomerInformationField customerInformationField) { //TODO improve safety by returning copy instead of original
-		return fields.get(customerInformationField);
+	public String getField(CustomerInformationEnum customerInformationEnum) { //TODO improve safety by returning copy instead of original
+		return fields.get(customerInformationEnum);
 	}
 	public List<Item> getItems() {
 		return items;
 	}
 	
-	public void setField(CustomerInformationField customerInformationField, String string) {
-		fields.put(customerInformationField, string);
+	public void setField(CustomerInformationEnum customerInformationEnum, String string) {
+		fields.put(customerInformationEnum, string);
 	}
 	public void setItems(List<Item> items) {
 		this.items = items;
@@ -59,8 +59,8 @@ public class Order implements Cloneable{
 			// keep the zonedDateTime constant throughout clones
 			
 			// copy over customer fields
-			for (CustomerInformationField customerInformationField : CustomerInformationField.values()) {
-				order.setField(customerInformationField, getField(customerInformationField));
+			for (CustomerInformationEnum customerInformationEnum : CustomerInformationEnum.values()) {
+				order.setField(customerInformationEnum, getField(customerInformationEnum));
 			}
 			
 			// copy over items

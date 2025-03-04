@@ -4,26 +4,29 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import menu.Order;
 
-public class CustomerInformation extends EditableFields<CustomerInformationField> {
+public class CustomerInformation extends ContainerFields<CustomerInformationEnum> {
 	private final Order orderWorking;
 	
     public CustomerInformation(Order order) {
-		super(CustomerInformationField.class);
+		super(CustomerInformationEnum.class);
 		orderWorking = order;
 		
 		// paste preexisting text in order into fields
-		for (CustomerInformationField customerInformationField : CustomerInformationField.values()) {
-			textFields.get(customerInformationField).setText(orderWorking.getField(customerInformationField));
+		for (CustomerInformationEnum customerInformationEnum : CustomerInformationEnum.values()) {
+			String fieldText = orderWorking.getField(customerInformationEnum);
+			setField(customerInformationEnum, fieldText);
 		}
 		
-		for (CustomerInformationField customerInformationField : CustomerInformationField.values()) {
+		// add listener to sync fields with orderWorking
+		for (CustomerInformationEnum customerInformationEnum : CustomerInformationEnum.values()) {
 			ChangeListener<String> changeListener = new ChangeListener<String>() {
 				@Override
 				public void changed(ObservableValue<? extends String> observableValue, String string1, String string2) {
-					orderWorking.setField(customerInformationField, string2);
+					String fieldText = getField(customerInformationEnum);
+					orderWorking.setField(customerInformationEnum, fieldText);
 				}
 			};
-			textFields.get(customerInformationField).textProperty().addListener(changeListener);
+			textFields.get(customerInformationEnum).textProperty().addListener(changeListener);
 		}
 	}
 }

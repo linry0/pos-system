@@ -1,6 +1,6 @@
 package element;
 
-public enum CustomerInformationField {
+public enum CustomerInformationEnum {
 	NAME("Name"),
 	TELEPHONE("Telephone"),
 	POSTCODE("Postcode"),
@@ -10,7 +10,7 @@ public enum CustomerInformationField {
 	
 	private final String name; // todo implement regex to convert (name,address1) to (Name,Address 1)
 	
-	CustomerInformationField(String name) {
+	CustomerInformationEnum(String name) {
 		this.name = name;
 	}
 	

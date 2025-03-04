@@ -2,8 +2,8 @@ package element;
 
 import menu.Order;
 
-public class EditableListOrders extends EditableList<Order> {
-	public EditableListOrders() {
+public class ContainerEditableOrders extends ContainerEditable<Order> {
+	public ContainerEditableOrders() {
 		super();
 	}
 	

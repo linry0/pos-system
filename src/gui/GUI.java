@@ -1,20 +1,20 @@
 package gui;
 
+import element.ContainerMenu;
 import element.CustomerInformation;
-import element.EditableListItems;
+import element.ContainerEditableItems;
+import javafx.application.Platform;
 import javafx.scene.Parent;
+import javafx.stage.WindowEvent;
 import util.Reader;
-import menu.Category;
-import menu.Item;
 import menu.Menu;
 import menu.Order;
-import element.EditableListOrders;
+import element.ContainerEditableOrders;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.HBox;
@@ -28,33 +28,37 @@ import java.util.HashMap;
 // add to run configurations vm options (its hidden by default)
 // --module-path /Users/linry/Documents/fortune-garden/javafx-sdk-22.0.1/lib --add-modules javafx.controls,javafx.fxml
 
+//TODO add button to exit (pressing mac close does not shutdown programme (compare with previous version cause that didn't have shutdown problem))
+//TODO add a printer to print order
+//TODO add ability to save orders from main scene to hard disk
+
+//TODO make Editable interface and rename ContainerEditableX to ContainerXEditable
+//TODO make itemsOrdered not toggle when loaded from disk
 //TODO should some public be protected?
 //TODO organise constants
-//TODO add ability to save orders from main scene to hard disk
-//TODO add a printer to print order
 
 public class GUI extends Application implements Constants {
 	public static HashMap<String, SceneBuilder> sceneReferralDatabase;
-	public static EditableListOrders editableListOrders;
+	public static ContainerEditableOrders containerEditableOrders;
 
 	public static SceneBuilder sceneMain;
 	public static SceneBuilder sceneOrder;
 	
 	static {
 		sceneReferralDatabase = new HashMap<>();
-		editableListOrders = new EditableListOrders();
+		containerEditableOrders = new ContainerEditableOrders();
 
 		sceneMain = stage -> {
 			Scene scene = new Scene(new Group());
 			scene.setUserData("sceneMain");
 				HBox hBox = new HBox(Constants.HBOX_SPACING);
 					ScrollPane scrollPaneSavedOrders = new ScrollPane();
-					scrollPaneSavedOrders.setContent(editableListOrders.getContainer());
+					scrollPaneSavedOrders.setContent(containerEditableOrders.getContainer());
 					
 					VBox vBoxStageControls = new VBox(Constants.VBOX_SPACING);
 						Button buttonNewOrder = buttonNewOrder(stage, "sceneOrder", "NEW ORDER"); //TODO
 						Button buttonLoadOrder = buttonLoadScene(stage, "sceneOrder", "LOAD ORDER");
-						Button buttonDeleteSelectedOrder = editableListOrders.buttonRemove("DELETE ORDER");
+						Button buttonDeleteSelectedOrder = containerEditableOrders.buttonRemove("DELETE ORDER");
 					vBoxStageControls.getChildren().addAll(buttonNewOrder, buttonLoadOrder, buttonDeleteSelectedOrder);
 				hBox.getChildren().addAll(scrollPaneSavedOrders, vBoxStageControls);
 			scene.setRoot(hBox);
@@ -64,31 +68,28 @@ public class GUI extends Application implements Constants {
 		
 		sceneOrder = stage -> {
 			Menu menu = Reader.getMenu("menu.tsv"); //TODO maybe put this somewhere else
-			Order orderSelected = editableListOrders.getSelectedItem();
+			Order orderSelected = containerEditableOrders.getSelectedItem();
 			Order orderWorking = orderSelected.clone(); // todo maybe rethink the placement of this initilisation
 			
 			Scene scene = new Scene(new Group());
 			scene.setUserData("sceneOrder");
 				HBox hBox = new HBox(Constants.HBOX_SPACING);
-					VBox vBoxItems = new VBox(Constants.VBOX_SPACING);
-					vBoxItems.setPrefSize(Constants.VBOX_LIST_WIDTH, Constants.VBOX_LIST_HEIGHT);
-
-						EditableListItems editableListItems = new EditableListItems(orderWorking);
-					VBox vBoxOrderedItems = (VBox) editableListItems.getContainer();
-
-						CustomerInformation customerInformation = new CustomerInformation(orderWorking);
-					VBox vBoxCustomerInformation = customerInformation.getContainer();
-
+					ContainerEditableItems containerEditableItems = new ContainerEditableItems(orderWorking);
+					ContainerMenu containerMenu = new ContainerMenu(menu, containerEditableItems);
+					CustomerInformation customerInformation = new CustomerInformation(orderWorking);
+			
+					Pane vBoxCustomerInformation = customerInformation.getContainer();
+					VBox vBoxCategories = (VBox) containerMenu.getContainer().getChildren().getFirst();
+					VBox vBoxItems = (VBox) containerMenu.getContainer().getChildren().getLast();
+					VBox vBoxItemsOrdered = (VBox) containerEditableItems.getContainer();
+					
 					VBox vBoxSceneControls = new VBox(Constants.HBOX_SPACING);
-						Button buttonRemoveItem = editableListItems.buttonRemove("REMOVE ITEM");
-						Button buttonSaveOrder = editableListOrders.buttonAdd(orderWorking, "SAVE ORDER");
+						Button buttonRemoveItem = containerEditableItems.buttonRemove("REMOVE ITEM");
+						Button buttonSaveOrder = containerEditableOrders.buttonAdd(orderWorking, "SAVE ORDER");
 						Button buttonClose = buttonLoadScene(stage, "sceneMain", "CLOSE");
 					vBoxSceneControls.getChildren().addAll(buttonRemoveItem, buttonSaveOrder, buttonClose);
-
-					ScrollPane scrollPaneCategories = scrollPaneCategories(menu, vBoxItems, editableListItems);
-					ScrollPane scrollPaneItems = new ScrollPane(vBoxItems);
-					ScrollPane scrollPaneItemsOrdered = new ScrollPane(vBoxOrderedItems); // TODO have scrollPaneItemsOrdered be its own class in element package and sync with orders
-				hBox.getChildren().addAll(vBoxCustomerInformation, scrollPaneCategories, scrollPaneItems, scrollPaneItemsOrdered, vBoxSceneControls);
+			
+				hBox.getChildren().addAll(vBoxCustomerInformation, new ScrollPane(vBoxCategories), new ScrollPane(vBoxItems), new ScrollPane(vBoxItemsOrdered), vBoxSceneControls);
 			scene.setRoot(hBox);
 	        return scene;
 	    };
@@ -135,66 +136,13 @@ public class GUI extends Application implements Constants {
 		
 		Button button = new Button(label);
 		EventHandler<ActionEvent> eventHandler = actionEvent -> {
-			editableListOrders.resetSelectedItem();
+			containerEditableOrders.resetSelectedItem();
 			buttonLoadScene.fire();
 		};
 		button.setOnAction(eventHandler);
 		
 		return button;
 	}
-
-    static public ToggleButton buttonCategoryChoose(Category category, Pane paneItems, EditableListItems editableListItems) {
-        ToggleButton toggleButton = new ToggleButton(category.getName());
-            EventHandler<ActionEvent> eventHandler = new EventHandler<ActionEvent>() {
-                @Override
-                public void handle(ActionEvent actionEvent) {
-					ScrollPane scrollPaneItems = scrollPaneItems(category, editableListItems);
-					
-					if (toggleButton.isSelected()) {
-						paneItems.getChildren().clear();
-						paneItems.getChildren().addAll(((Pane) scrollPaneItems.getContent()).getChildren());
-					} else {
-						paneItems.getChildren().clear();
-					}
-                }
-            };
-        toggleButton.setOnAction(eventHandler);
-        
-		return toggleButton;
-    }
-	
-	static public ScrollPane scrollPaneCategories(Menu menu, Pane paneItems, EditableListItems editableListItems) {
-        ScrollPane scrollPane = new ScrollPane();
-            VBox vBox = new VBox(10);
-            vBox.setPrefSize(Constants.VBOX_LIST_WIDTH, Constants.VBOX_LIST_HEIGHT);
-	            ToggleGroup toggleGroup = new ToggleGroup();
-                ArrayList<ToggleButton> toggleButtonsChooseCategory = new ArrayList<>();
-				
-                for (Category category : menu.getCategories()) {
-                    ToggleButton toggleButtonCategoryChoose = buttonCategoryChoose(category, paneItems, editableListItems);
-					toggleButtonCategoryChoose.setToggleGroup(toggleGroup);
-                    toggleButtonsChooseCategory.add(toggleButtonCategoryChoose);
-                }
-            vBox.getChildren().addAll(toggleButtonsChooseCategory);
-        scrollPane.setContent(vBox);
-
-        return scrollPane;
-    }
-	
-	static public ScrollPane scrollPaneItems(Category category, EditableListItems editableListItems) {
-        ScrollPane scrollPane = new ScrollPane();
-            VBox vBox = new VBox(10);
-            vBox.setPrefSize(Constants.VBOX_LIST_WIDTH, Constants.VBOX_LIST_HEIGHT);
-				ArrayList<Button> buttonsItemAdd = new ArrayList<>();
-				for (Item item : category.getItems()) {
-					buttonsItemAdd.add(editableListItems.buttonAdd(item, item.getName()));
-				}
-            vBox.getChildren().addAll(buttonsItemAdd);
-        scrollPane.setContent(vBox);
-
-        return scrollPane;
-    }
-
 	
     public static void main(String[] args) {
         Application.launch(args);
@@ -208,9 +156,14 @@ public class GUI extends Application implements Constants {
         primaryStage.setFullScreen(Constants.DEFAULT_FULLSCREEN);
 		primaryStage.setMinWidth(1200);
         primaryStage.show();
-//        primaryStage.setOnCloseRequest(event -> {
-//            stageClose(primaryStage).showAndWait();
-//        });
+		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
+			@Override
+			public void handle(WindowEvent t) {
+				System.out.println("hello");
+				Platform.exit();
+				System.exit(0);
+			}
+		});
     }
 	
 	//TODO recreate cookies for each scene so each scene's required prerequisite data is stored not in the link (in the case the data is stored with the user)
