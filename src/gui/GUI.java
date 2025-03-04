@@ -159,7 +159,6 @@ public class GUI extends Application implements Constants {
 		primaryStage.setOnCloseRequest(new EventHandler<WindowEvent>() {
 			@Override
 			public void handle(WindowEvent t) {
-				System.out.println("hello");
 				Platform.exit();
 				System.exit(0);
 			}

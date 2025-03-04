@@ -9,7 +9,7 @@ import java.util.List;
 
 public class Order implements Cloneable{
 	private final ZonedDateTime zonedDateTime;
-	private HashMap<CustomerInformationEnum, String> fields;
+	private final HashMap<CustomerInformationEnum, String> fields;
 	private List<Item> items;
 	
 	public Order() {

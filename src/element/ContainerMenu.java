@@ -50,6 +50,7 @@ public class ContainerMenu extends Container<HBox> {
 				@Override
 				public void handle(ActionEvent actionEvent) {
 					if (toggleButton.isSelected()) {
+						itemsClear();
 						itemsLoad(items);
 					} else {
 						itemsClear();
